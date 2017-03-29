@@ -78,9 +78,9 @@ void solveRow(int rowNumber,int numVariables,char* function){
                 break;
             case '>':
                 stackHead--;
-                num1 = stack[stackHead];
-                stackHead--;
                 num2 = stack[stackHead];
+                stackHead--;
+                num1 = stack[stackHead];
                 stack[stackHead] = implication(num1,num2);
                 printf("%d",stack[stackHead]);
                 stackHead++;
@@ -108,15 +108,18 @@ void solveRow(int rowNumber,int numVariables,char* function){
                 break;
         }
     }
-    printf(" :   %d\n",stack[0]);
+    printf(":   %d\n",stack[0]);
 }
 void printTableHeader(int numVariables,char* function){
     for(int c=0; c<numVariables;c++){
         printf("%c ",alphabet[c]);
     }
-     printf(": %s\t: Result\n", function);
-     //TODO Change to print set amount to equal line length above
-     printf("===============================\n");
+     printf(": %s : Result\n", function);
+    int linelen = strlen(function) + 11 + (2*numVariables);
+    for (int c=0;c<linelen;c++){
+        printf("=");
+    }
+    printf("\n");
 }
 
 char readCharAt(int index, char* array){
