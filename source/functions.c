@@ -27,26 +27,49 @@ int powInt(int x, int y){
     }
     return result;
 }
-void printTableRow(int rowNumber, int numVariables, char* function){
-    for(int c=numVariables-1;c>=0;c--){
-        printf("%d ",bitValueAt(rowNumber,c));
+int printTableRow(int rowNumber, int numVariables, char* function, char flag1){
+    if(flag1=='1'){
+        char* solved ;//= calloc((strlen(function)+1),1);
+        solved = solveRow(rowNumber, numVariables, function);
+        if(solved[strlen(function)-1]=='1'){
+            for(int c=numVariables-1;c>=0;c--){
+                printf("%d ",bitValueAt(rowNumber,c));
+            }
+            printf(": ");
+            printf("%s",solved);
+            printf(" :   %c\n",solved[strlen(function)-1]);
+        }
+        return solved[strlen(function)-1]-asciOffset;
+    } else {
+        for(int c=numVariables-1;c>=0;c--){
+            printf("%d ",bitValueAt(rowNumber,c));
+        }
+        char* solved = solveRow(rowNumber, numVariables, function);
+        printf(": ");
+        for(int i=0;i<strlen(solved)-1;i++){
+            printf("%c",solved[i]);
+        }
+        printf(" :   %c\n",solved[strlen(function)]);
+        int value = solved[strlen(function)-1]-asciOffset;
+        free(solved);
+        return value;
     }
-    printf(": ");
-    solveRow(rowNumber, numVariables, function);
+
 }
 
-void solveRow(int rowNumber,int numVariables,char* function){
-    int *stack = calloc(numVariables,sizeof(int));
+char* solveRow(int rowNumber,int numVariables,char* function){
+    int *stack = calloc(strlen(function),sizeof(int));
     int stackHead=0;
     int stringLength = strlen(function);
-    for(int c=0;c<stringLength+1;c++){
+    char* response = calloc(stringLength+2,sizeof(char));
+    for(int c=0;c<stringLength;c++){
         int num1=0, num2=0;
         switch(readCharAt(c,function)) {
             case '-':
                 stackHead--;
                 num1 = stack[stackHead];
                 stack[stackHead] = negate(num1);
-                printf("%d",stack[stackHead]);
+                response[c] = (char)stack[stackHead]+asciOffset;
                 stackHead++;
                 break;
             case '|':
@@ -55,7 +78,7 @@ void solveRow(int rowNumber,int numVariables,char* function){
                 stackHead--;
                 num2 = stack[stackHead];
                 stack[stackHead] = or(num1,num2);
-                printf("%d",stack[stackHead]);
+                response[c] = (char)stack[stackHead]+asciOffset;
                 stackHead++;
                 break;
             case '&':
@@ -64,7 +87,7 @@ void solveRow(int rowNumber,int numVariables,char* function){
                 stackHead--;
                 num2 = stack[stackHead];
                 stack[stackHead] = and(num1,num2);
-                printf("%d",stack[stackHead]);
+                response[c] = (char)stack[stackHead]+asciOffset;
                 stackHead++;
                 break;
             case '#':
@@ -73,7 +96,7 @@ void solveRow(int rowNumber,int numVariables,char* function){
                 stackHead--;
                 num2 = stack[stackHead];
                 stack[stackHead] = exclusiveOr(num1,num2);
-                printf("%d",stack[stackHead]);
+                response[c] = (char)stack[stackHead]+asciOffset;
                 stackHead++;
                 break;
             case '>':
@@ -82,7 +105,7 @@ void solveRow(int rowNumber,int numVariables,char* function){
                 stackHead--;
                 num1 = stack[stackHead];
                 stack[stackHead] = implication(num1,num2);
-                printf("%d",stack[stackHead]);
+                response[c] = (char)stack[stackHead]+asciOffset;
                 stackHead++;
                 break;
             case '=':
@@ -91,7 +114,7 @@ void solveRow(int rowNumber,int numVariables,char* function){
                 stackHead--;
                 num2 = stack[stackHead];
                 stack[stackHead] = equal(num1,num2);
-                printf("%d",stack[stackHead]);
+                response[c] = (char)stack[stackHead]+asciOffset;
                 stackHead++;
                 break;
             default:
@@ -99,23 +122,27 @@ void solveRow(int rowNumber,int numVariables,char* function){
                     int index = findIndexAlphabet(readCharAt(c,function));
                     stack[stackHead] = bitValueAt(rowNumber,numVariables-index-1);
                     stackHead++;
-                    printf(" ");
+                    response[c] = ' ';
                 }else{
                     stack[stackHead] = readCharAt(c,function)-asciOffset;
                     stackHead++;
-                    printf(" ");
+                    response[c] = ' ';
                 }
                 break;
         }
     }
-    printf(":   %d\n",stack[0]);
+    stackHead--;
+    response[stringLength] = stack[stackHead]+asciOffset;
+    response[stringLength+1] = '\0';
+    free(stack);
+    return response;
 }
 void printTableHeader(int numVariables,char* function){
     for(int c=0; c<numVariables;c++){
         printf("%c ",alphabet[c]);
     }
      printf(": %s : Result\n", function);
-    int linelen = strlen(function) + 11 + (2*numVariables);
+    int linelen = (int) strlen(function) + 11 + (2*numVariables);
     for (int c=0;c<linelen;c++){
         printf("=");
     }
